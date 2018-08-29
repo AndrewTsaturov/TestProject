@@ -1,10 +1,12 @@
 package com.example.testproject.presenter;
 
 
+import com.arellomobile.mvp.InjectViewState;
+import com.arellomobile.mvp.MvpPresenter;
 import com.example.testproject.GithubListApp;
 import com.example.testproject.model.IAppModel;
 import com.example.testproject.model.retrofit2_json_utils.GitHubRepo;
-import com.example.testproject.view.IAppView;
+import com.example.testproject.view.IAppScreens;
 import com.example.testproject.view.IRepoListView;
 
 import java.util.ArrayList;
@@ -12,23 +14,21 @@ import java.util.ArrayList;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import ru.terrakok.cicerone.Router;
 
 /**
  * Created by Дом on 22.02.2018.
  */
 
-public class ListPresenter implements IListPresenter {
+@InjectViewState
+public class ListPresenter extends MvpPresenter<IRepoListView> implements IListPresenter{
 
-    private IAppModel model;
+    private final IAppModel model = GithubListApp.getAppModel();
 
-    private IRepoListView view;
+    private final Router router = GithubListApp.getInstance().getRouter();
 
-    private IAppView mainView;
+    public ListPresenter() {
 
-    public ListPresenter(IRepoListView view) {
-        model = GithubListApp.getAppModel();
-
-        this.view = view;
     }
 
     @Override
@@ -36,14 +36,14 @@ public class ListPresenter implements IListPresenter {
         if(model.getItemsForShow().size() == 0) loadAndShow();
 
         else {
-            view.hideLoadingProgressBar();
-            view.showListOfGitHubRepositories(model.getItemsForShow());
+            getViewState().hideLoadingProgressBar();
+            getViewState().showListOfGitHubRepositories(model.getItemsForShow());
         }
     }
 
     private void loadAndShow() {
 
-        view.showLoadingProgressBar();
+        getViewState().showLoadingProgressBar();
 
         model.getRetrofit().getRepositories(model.provideTargetUrl()).enqueue(new Callback<ArrayList<GitHubRepo>>() {
 
@@ -52,8 +52,8 @@ public class ListPresenter implements IListPresenter {
                                    Response<ArrayList<GitHubRepo>> response) {
                 model.convertReposToListItems(response.body());
 
-                view.hideLoadingProgressBar();
-                view.showListOfGitHubRepositories(model.getItemsForShow());
+                getViewState().hideLoadingProgressBar();
+                getViewState().showListOfGitHubRepositories(model.getItemsForShow());
             }
 
             @Override
@@ -66,17 +66,12 @@ public class ListPresenter implements IListPresenter {
     public void onRepositoryItemClick(int position) {
         model.setShowingLink(model.getItemsForShow().get(position).getLink());
 
-        mainView.showRepositoryPageScreen();
+        router.navigateTo(IAppScreens.ORIGIN_SCREEN_KEY);
     }
 
     @Override
     public void onSwipeList() {
        loadAndShow();
-    }
-
-    @Override
-    public void setMainView(IAppView appView) {
-        this.mainView = appView;
     }
 
     @Override
