@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.example.testproject.R;
 import com.example.testproject.model.pojo.ShowingItem;
 import com.example.testproject.presenter.IListPresenter;
+import com.example.testproject.presenter.ListPresenter;
 
 import java.util.ArrayList;
 
@@ -23,13 +24,13 @@ public class RepoListAdapter extends RecyclerView.Adapter<RepoListAdapter.VH> {
 
     private ArrayList<ShowingItem> itemsToShow;
 
-    private IListPresenter presenter;
+    private ListPresenter presenter;
 
     public RepoListAdapter() {
         itemsToShow = new ArrayList<>();
     }
 
-    public void setPresenter(IListPresenter presenter) {
+    public void setPresenter(ListPresenter presenter) {
         this.presenter = presenter;
     }
 

@@ -1,64 +1,71 @@
 package com.example.testproject.view.activites;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
+import com.arellomobile.mvp.MvpAppCompatActivity;
+import com.example.testproject.GithubListApp;
 import com.example.testproject.R;
-import com.example.testproject.presenter.AppPresenter;
-import com.example.testproject.presenter.IAppPresenter;
-import com.example.testproject.view.IAppView;
+
+import com.example.testproject.view.IAppScreens;
 import com.example.testproject.view.fragments.GitHubListFragment;
 import com.example.testproject.view.fragments.OriginPageFragment;
 
-public class MainActivity extends AppCompatActivity implements IAppView{
-    private static byte screenID = 0;
 
-    private static GitHubListFragment listFragment = new GitHubListFragment();
-    private static OriginPageFragment pageFragment = new OriginPageFragment();
+import ru.terrakok.cicerone.android.SupportAppNavigator;
+import ru.terrakok.cicerone.commands.Command;
+import ru.terrakok.cicerone.commands.Replace;
 
-    private IAppPresenter presenter;
+public class MainActivity extends MvpAppCompatActivity implements IAppScreens {
+    private SupportAppNavigator navigator = new SupportAppNavigator(this, R.id.layout_fragment_container) {
+        @Override
+        protected Intent createActivityIntent(Context context, String screenKey, Object data) {
+            return null;
+        }
+
+        @Override
+        protected Fragment createFragment(String screenKey, Object data) {
+            switch (screenKey){
+                case LIST_SCREEN_KEY: return new GitHubListFragment();
+
+                case ORIGIN_SCREEN_KEY: return new OriginPageFragment();
+
+                default: throw  new RuntimeException("WRONG SCREEN KEY");
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        presenter = new AppPresenter(this);
-        presenter.onAppStarted();
+        if (savedInstanceState == null){
+            getSupportFragmentManager().popBackStack();
+
+            navigator.applyCommands(new Command[]{new Replace(LIST_SCREEN_KEY, null)});
+        }
     }
 
     @Override
-    public void showGithubListScreen() {
-        screenID = LIST_SCREEN_ID;
+    protected void onResume() {
+        super.onResume();
 
-        showFragment(listFragment);
+        GithubListApp.getInstance().getNavigatorHolder().setNavigator(navigator);
     }
 
     @Override
-    public void showRepositoryPageScreen() {
-        screenID = ORIGIN_SCREEN_ID;
+    protected void onPause() {
+        super.onPause();
 
-        showFragment(pageFragment);
+        GithubListApp.getInstance().getNavigatorHolder().removeNavigator();
     }
 
     @Override
     public void onBackPressed() {
-        presenter.onBackButtonPressed();
-    }
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) GithubListApp.getInstance().getRouter().exit();
 
-    @Override
-    public void stopView() {
-        super.onBackPressed();
-    }
-
-    @Override
-    public byte getScreenID() {
-        return screenID;
-    }
-
-    private void showFragment(Fragment fragment){
-        getSupportFragmentManager().beginTransaction().replace(R.id.layout_fragment_container,
-                fragment).commit();
+        else moveTaskToBack(true);
     }
 }

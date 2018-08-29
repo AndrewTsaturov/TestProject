@@ -14,6 +14,8 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.arellomobile.mvp.MvpAppCompatFragment;
+import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.example.testproject.R;
 import com.example.testproject.presenter.IOriginPresenter;
 import com.example.testproject.presenter.OriginPresenter;
@@ -27,12 +29,13 @@ import butterknife.Unbinder;
  * Created by Дом on 21.02.2018.
  */
 
-public class OriginPageFragment extends Fragment implements IOriginView{
+public class OriginPageFragment extends MvpAppCompatFragment implements IOriginView{
     //TODO --> меню с кнопокй шаринга
 
     @BindView(R.id.web_view_origin) WebView webViewOrigin;
 
-    IOriginPresenter presenter;
+    @InjectPresenter
+    OriginPresenter presenter;
 
     private Unbinder unbinder;
 
@@ -83,8 +86,6 @@ public class OriginPageFragment extends Fragment implements IOriginView{
     }
 
     private void init(){
-        presenter = new OriginPresenter(this);
-
         webViewOrigin.setWebViewClient(new WebViewClient());
         webViewOrigin.setWebChromeClient(new WebChromeClient());
     }

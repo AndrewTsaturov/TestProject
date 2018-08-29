@@ -2,7 +2,6 @@ package com.example.testproject.view.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,12 +11,12 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
+import com.arellomobile.mvp.MvpAppCompatFragment;
+import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.example.testproject.R;
 import com.example.testproject.model.pojo.ShowingItem;
-import com.example.testproject.model.retrofit2_json_utils.GitHubRepo;
-import com.example.testproject.presenter.IListPresenter;
 import com.example.testproject.presenter.ListPresenter;
-import com.example.testproject.view.IAppView;
+import com.example.testproject.view.IAppScreens;
 import com.example.testproject.view.IRepoListView;
 import com.example.testproject.view.adapters.RepoListAdapter;
 
@@ -31,7 +30,7 @@ import butterknife.Unbinder;
  * Created by Дом on 21.02.2018.
  */
 
-public class GitHubListFragment extends Fragment implements IRepoListView{
+public class GitHubListFragment extends MvpAppCompatFragment implements IRepoListView{
 
     @BindView(R.id.swipe_layout) SwipeRefreshLayout swipeRefreshLayout;
     @BindView(R.id.rv_list_of_repositories) RecyclerView repositoryList;
@@ -41,7 +40,8 @@ public class GitHubListFragment extends Fragment implements IRepoListView{
 
     private LinearLayout.LayoutParams progressBarParams;
 
-    private IListPresenter presenter;
+    @InjectPresenter
+    ListPresenter presenter;
 
     private RepoListAdapter adapter;
 
@@ -74,9 +74,6 @@ public class GitHubListFragment extends Fragment implements IRepoListView{
     }
 
     private void init() {
-        presenter = new ListPresenter(this);
-        presenter.setMainView((IAppView) getActivity());
-
         progressBarParams = (LinearLayout.LayoutParams) progressBar.getLayoutParams();
 
         progressBarHeight = progressBarParams.height;
