@@ -8,12 +8,12 @@ import com.example.testproject.model.IAppModel;
 import com.example.testproject.model.retrofit2_json_utils.GitHubRepo;
 import com.example.testproject.view.IAppScreens;
 import com.example.testproject.view.IRepoListView;
-
 import java.util.ArrayList;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import ru.terrakok.cicerone.Router;
 
 /**
@@ -42,25 +42,19 @@ public class ListPresenter extends MvpPresenter<IRepoListView> implements IListP
     }
 
     private void loadAndShow() {
-
         getViewState().showLoadingProgressBar();
 
-        model.getRetrofit().getRepositories(model.provideTargetUrl()).enqueue(new Callback<ArrayList<GitHubRepo>>() {
 
-            @Override
-            public void onResponse(Call<ArrayList<GitHubRepo>> call,
-                                   Response<ArrayList<GitHubRepo>> response) {
-                model.convertReposToListItems(response.body());
+        Observable<ArrayList<GitHubRepo>> observable = model.getRetrofit().getRepositories(model.provideTargetUrl());
+        observable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread()).subscribe(gitHubRepos -> {
+                    model.convertReposToListItems(gitHubRepos);
 
-                getViewState().hideLoadingProgressBar();
-                getViewState().showListOfGitHubRepositories(model.getItemsForShow());
-            }
-
-            @Override
-            public void onFailure(Call<ArrayList<GitHubRepo>> call, Throwable t) {
-            }
+            getViewState().hideLoadingProgressBar();
+            getViewState().showListOfGitHubRepositories(model.getItemsForShow());
         });
     }
+
 
     @Override
     public void onRepositoryItemClick(int position) {
@@ -78,4 +72,6 @@ public class ListPresenter extends MvpPresenter<IRepoListView> implements IListP
     public void onListEnded() {
         loadAndShow();
     }
+
+
 }
